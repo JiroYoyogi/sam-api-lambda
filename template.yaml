@@ -11,15 +11,19 @@ Resources:
   MessagesGetFunction:
     Type: AWS::Serverless::Function
     Properties:
+      # srcディレクトリ
       CodeUri: src/
+      # CodeUriに指定したディレクトリにある
+      # messagesGetというファイル内のlambdaHandlerという関数を呼ぶ
       Handler: messagesGet.lambdaHandler
       Runtime: nodejs22.x
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        MessagesGet:
           Type: Api
           Properties:
+            # messagesに対してのGETリクエストを受け付けるAPIパス
             Path: /messages
             Method: get
 
@@ -27,18 +31,22 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
+      # CodeUriに指定したディレクトリにある
+      # messagesPostというファイル内のlambdaHandlerという関数を呼ぶ
       Handler: messagesPost.lambdaHandler
       Runtime: nodejs22.x
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
+        MessagesPost:
           Type: Api
           Properties:
+            # messagesに対してのPOSTリクエストを受け付けるAPIパス
             Path: /messages
             Method: post
 
 Outputs:
+  # デプロイ後にターミナルにAPIのURLを出力
   MessagesApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Description: "API Gateway endpoint URL for Prod stage for Messages function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/messages/"
