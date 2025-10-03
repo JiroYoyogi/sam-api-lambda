@@ -57,19 +57,34 @@ sam local start-api
 
 `/hello` → `/messages`
 
-- リソース名変更
-
-`HelloWorldFunction` → `MessagesGetFunction`
-
-- ファイル名変更
-
-`hello-world/app.mjs` → `src/messagesGet.mjs`
-
-- POSTメソッドを追加
-
-以下をリソース（Resources）に追加
+- template.yamlを置き換え
 
 ```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SAM Template for sam-api-lambda
+  
+Globals:
+  Function:
+    Timeout: 30
+
+Resources:
+  MessagesGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: messagesGet.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /messages
+            Method: get
+
   MessagesPostFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -84,6 +99,35 @@ sam local start-api
           Properties:
             Path: /messages
             Method: post
+
+Outputs:
+  MessagesApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/messages/"
+
+```
+
+- ファイル名変更
+
+`hello-world/app.mjs` → `src/messagesGet.mjs`
+
+- messagesPost.mjsを作成
+
+下記をコピペ
+
+```js
+export const lambdaHandler = async (event, context) => {
+  const body = JSON.parse(event.body || "{}");
+  const userName = body.userName || "";
+  const response = {
+    statusCode: 200,
+    body: JSON.stringify({
+      message: `hello ${userName} !`,
+    }),
+  };
+
+  return response;
+};
 ```
 
 # AWSにAPI・Lambdaをデプロイ
@@ -101,24 +145,3 @@ sam deploy --guided
 ```
 
 AWSにログインして各リソースが作成されていることを確認する
-
-# POSTリクエスト用の関数作成
-
-
-
-- messagesPost.mjs
-
-```js
-export const lambdaHandler = async (event, context) => {
-  const body = JSON.parse(event.body || "{}");
-  const userName = body.userName || "";
-  const response = {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: `hello ${userName} !`,
-    }),
-  };
-
-  return response;
-};
-```
