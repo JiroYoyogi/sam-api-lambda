@@ -59,6 +59,9 @@ sam local start-api
 
 - template.yamlを置き換え
 
+APIのパス変更に合わせてリソース名の整理。POSTリクエストを受け付けるAPIパス・Lambdaを作成
+
+
 ```yaml
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
