@@ -10,7 +10,7 @@ https://docs.aws.amazon.com/ja_jp/serverless-application-model/latest/developerg
 1. ローカルPCにAPI・Lambdaを立ち上げる
 1. コードの変更・テンプレート解説
 1. AWSにAPI・Lambdaをデプロイ
-1. POSTメソッド用の関数作成
+1. AWS上でリソースの確認・APIリクエスト実行
 
 # SAMプロジェクト作成
 
