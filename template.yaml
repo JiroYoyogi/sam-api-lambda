@@ -2,12 +2,120 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
   SAM Template for sam-api-lambda
+
+Parameters:
+  # 作成するDynamoDBのテーブル名
+  LikesTableName:
+    Type: String
   
 Globals:
   Function:
     Timeout: 30
+    Environment:
+      Variables:
+        # Parametersで受け取ったテーブル名をLambdaの環境変数にセット
+        LikesTableName: !Ref LikesTableName
+  Api:
+    OpenApiVersion: 3.0.2
+    # プリフライトリクエスト対応
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"
+    # Auth:
+    #   ResourcePolicy:
+    #     IpRangeWhitelist:
+    #       - 118.111.39.99/32
 
 Resources:
+  # DynamoDB
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-dynamodb-table.html
+  LikesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      # Parametersで受け取ったテーブル名をTableNameとしてセット
+      TableName: !Ref LikesTableName
+      # idをパーティションキー（HASH）として使う
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      # キーの型を定義
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      # オンデマンドで課金。デフォルトはPROVISIONED
+      BillingMode: PAY_PER_REQUEST
+
+  # LambdaにDynamoDBの操作権限を与えるIAM
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-iam-role.html
+  LikesFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      # LambdaがCloudWatch Logsにも書けるようにする（基本ポリシー）
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                # LikesTabeに対する上記操作を許可
+                Resource: !GetAtt LikesTable.Arn
+                
+  # "いいね"をGETするLambda
+  LikesGetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      # srcディレクトリ
+      CodeUri: src/
+      # CodeUriに指定したディレクトリにある
+      # likesGetというファイル内のlambdaHandlerという関数を呼ぶ
+      Handler: likesGet.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: !GetAtt LikesFunctionRole.Arn
+      Events:
+        MessagesGet:
+          Type: Api
+          Properties:
+            # likesに対してのGETリクエストを受け付けるAPIパス
+            Path: /likes
+            Method: get
+
+  # "いいね"をPOSTするLambda         
+  LikesPostFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      # srcディレクトリ
+      CodeUri: src/
+      # CodeUriに指定したディレクトリにある
+      # likesPostというファイル内のlambdaHandlerという関数を呼ぶ
+      Handler: likesPost.lambdaHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Role: !GetAtt LikesFunctionRole.Arn
+      Events:
+        MessagesGet:
+          Type: Api
+          Properties:
+            # likesに対してのGETリクエストを受け付けるAPIパス
+            Path: /likes
+            Method: post
+
   MessagesGetFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -50,3 +158,6 @@ Outputs:
   MessagesApi:
     Description: "API Gateway endpoint URL for Prod stage for Messages function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/messages/"
+  LikesApi:
+    Description: "API Gateway endpoint URL for Prod stage for Likes function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/likes/"
