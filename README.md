@@ -83,6 +83,7 @@ Globals:
   #     AllowOrigin: "'*'"
 
 Resources:
+  # DynamoDB
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-dynamodb-table.html
   LikesTable:
     Type: AWS::DynamoDB::Table
@@ -100,6 +101,7 @@ Resources:
       # オンデマンドで課金。デフォルトはPROVISIONED
       BillingMode: PAY_PER_REQUEST
 
+  # LambdaにDynamoDBの操作権限を与えるIAM
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-iam-role.html
   LikesFunctionRole:
     Type: AWS::IAM::Role
@@ -127,6 +129,7 @@ Resources:
                 # LikesTabeに対する上記操作を許可
                 Resource: !GetAtt LikesTable.Arn
 
+  # "いいね"をGETするLambda
   LikesGetFunction:
     Type: AWS::Serverless::Function
     Properties:
