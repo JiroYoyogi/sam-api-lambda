@@ -364,7 +364,7 @@ export const lambdaHandler = async (event) => {
 }
 ```
 
-## ローカルで実行
+## デプロイ
 
 ビルド
 
@@ -372,16 +372,18 @@ export const lambdaHandler = async (event) => {
 sam build
 ```
 
-パラメーターの値を渡してローカルPCにテスト環境を立ち上げる
-
-```
-sam local start-api --parameter-overrides "LikesTableName=likes-test"
-```
-
 デプロイ
 
 ```
 sam deploy --guided
+```
+
+## デプロイする前にローカルで試したい！
+
+以下のように、パラメーターの値を渡してコマンドを実行
+
+```
+sam local start-api --parameter-overrides "LikesTableName=likes-test"
 ```
 
 # CORS対応
