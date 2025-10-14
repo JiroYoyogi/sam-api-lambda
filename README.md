@@ -74,13 +74,13 @@ Globals:
       Variables:
         # Parametersで受け取ったテーブル名をLambdaの環境変数にセット
         LikesTableName: !Ref LikesTableName
-  Api:
-    OpenApiVersion: 3.0.2
-    # プリフライトリクエスト対応
-    # Cors:
-    #   AllowMethods: "'GET,POST,OPTIONS'"
-    #   AllowHeaders: "'Content-Type'"
-    #   AllowOrigin: "'*'"
+  # Api:
+  #   OpenApiVersion: 3.0.2
+  #   # プリフライトリクエスト対応
+  #   Cors:
+  #     AllowMethods: "'GET,POST,OPTIONS'"
+  #     AllowHeaders: "'Content-Type'"
+  #     AllowOrigin: "'*'"
 
 Resources:
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-dynamodb-table.html
