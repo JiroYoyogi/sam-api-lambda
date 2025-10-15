@@ -386,7 +386,7 @@ sam deploy --guided
 以下のように、パラメーターの値を渡してコマンドを実行
 
 ```
-sam local start-api --parameter-overrides "LikesTableName=like-test"
+sam local start-api --parameter-overrides "LikesTableName=like-table"
 ```
 
 # CORS対応
